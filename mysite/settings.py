@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import dj_database_url
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-xb4%e92yq)c=15wgc$c2efm*po2)v@-y==ycx3rzs7m!5!u5vw'
+# SECRET_KEY = 'django-insecure-xb4%e92yq)c=15wgc$c2efm*po2)v@-y==ycx3rzs7m!5!u5vw'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True 
+DEBUG = os.environ.get("DEBUG","False").lower() == "true"
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 
 
 # Application definition
@@ -84,6 +88,11 @@ DATABASES = {
     }
 }
 
+database_url=os.environ.get("DATABASE_URL")
+
+DATABASES['default'] = dj_database_url.parse(database_url)
+
+#postgres://hotel_food_django_render_user:TTKURf5ZtdX0goOgoPEB2RSYFbqUONv1@dpg-cp638ng21fec738aa7b0-a.oregon-postgres.render.com/hotel_food_django_render
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
