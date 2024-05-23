@@ -26,6 +26,7 @@ urlpatterns = [
     path('',index,name="polls"),
     path('success_page/',success_page,name="success_page"),
     path('delete_receipe/<id>/',delete_receipe,name="delete_receipe"),
+    path('update_receipes/<id>/',update_receipes,name="update_receipes"),
     path('receipes/',receipes,name="receipes"),
     path('about/', about, name="about"),
     path("admin/", admin.site.urls),
