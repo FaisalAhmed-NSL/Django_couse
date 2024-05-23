@@ -12,25 +12,40 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 import dj_database_url
 from pathlib import Path
-
+from django.core.exceptions import ImproperlyConfigured
+import environ
+env = environ.Env()
+env_file='env/environment.env'
+environ.Env.read_env(env_file)
+print('env: ',env('SECRET_KEY'))
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+def get_env_variable(var_name):
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        raise ImproperlyConfigured(f"The {var_name} environment variable is not set.")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
+# SECRET_KEY = os.environ.get("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True 
-DEBUG = os.environ.get("DEBUG","False").lower() == "true"
+# # SECURITY WARNING: don't run with debug turned on in production!
+# # DEBUG = True 
+# DEBUG = os.environ.get("DEBUG","False").lower() == "true"
 
-# ALLOWED_HOSTS = []
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS","").split(" ")
+# # ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS","").split(" ")
 
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env.bool('DEBUG', default=False)
+ALLOWED_HOSTS = env('ALLOWED_HOSTS', default="").split()
+database_url = env('DATABASE_URL')
+
+print('secrect key: ',SECRET_KEY)
 
 # Application definition
 
@@ -89,9 +104,17 @@ DATABASES = {
     }
 }
 
-database_url=os.environ.get("DATABASE_URL")
+# database_url=os.environ.get("DATABASE_URL")
 
-DATABASES['default'] = dj_database_url.parse(database_url)
+# DATABASES['default'] = dj_database_url.parse(database_url)
+if database_url:
+    try:
+        DATABASES['default'] = dj_database_url.parse(database_url)
+    except ValueError as e:
+        print(f"Invalid DATABASE_URL: {e}")
+        raise ValueError("Invalid DATABASE_URL environment variable.")
+else:
+    print("Warning: DATABASE_URL environment variable not set. Using default SQLite database.")
 
 #postgres://hotel_food_django_render_user:TTKURf5ZtdX0goOgoPEB2RSYFbqUONv1@dpg-cp638ng21fec738aa7b0-a.oregon-postgres.render.com/hotel_food_django_render
 
