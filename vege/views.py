@@ -1,8 +1,69 @@
 from django.shortcuts import render, redirect
 from .models import *
 from django.http import HttpResponse
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
+
+
+def logout_page(request):
+    logout(request)
+    return redirect('/login_page/')
+
+def login_page(request):
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        if not User.objects.filter(username=username).exists():
+            messages.error(request,'invalid username')
+            return redirect('/login_page/')
+        user = authenticate(username=username,password=password)
+        if user is None:
+            messages.error(request,"invalid password")
+            return redirect('/login_page/')
+        else:
+            messages.info(request,'login successful')
+            login(request,user)
+            return redirect('/receipes/')
+
+        
+
+
+
+    return render(request,'login_page.html')
+
+
+def registration_page(request):
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user=User.objects.filter(username=username)
+        if user.exists():
+            messages.info(request,"User already exists")
+
+            return redirect('/registration_page/')
+
+        user = User.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            username=username
+        )
+        user.set_password(password)
+        user.save()
+        messages.info(request,"Account created successfully")
+        return redirect('/registration_page/')
+
+    return render(request,'registration_page.html')
+
+@login_required(login_url='/login_page/')
 def receipes(request):
     
 
